@@ -305,7 +305,7 @@ function rowToApp(r){
     dores:r.dores||[],doresObs:r.doresobs||'',lesoes:r.lesoes||'',cirurgias:r.cirurgias||'',
     fraturas:r.fraturas||'',medicamentos:r.medicamentos||'',sintomas:r.sintomas||[],
     obs:r.obs||'',dataAssinatura:r.dataassinatura||'',
-    treinoPronto:r.trainopronto||false,treinoProntoData:r.treinoprontodata||null,
+    treinoPronto:r.treinopronto||false,treinoProntoData:r.treinoprontodata||null,
     cadastro:r.cadastro||''
   };
 }
@@ -320,7 +320,7 @@ function appToRow(a){
     dores:a.dores||[],doresobs:a.doresObs||'',lesoes:a.lesoes||'',cirurgias:a.cirurgias||'',
     fraturas:a.fraturas||'',medicamentos:a.medicamentos||'',sintomas:a.sintomas||[],
     obs:a.obs||'',dataassinatura:a.dataAssinatura||'',
-    trainopronto:a.treinoPronto||false,treinoprontodata:a.treinoProntoData||null,
+    treinopronto:a.treinoPronto||false,treinoprontodata:a.treinoProntoData||null,
     cadastro:a.cadastro||new Date().toLocaleDateString('pt-BR')
   };
 }
@@ -559,7 +559,7 @@ async function toggleTreino(id){
   const s=students.find(x=>x.id===id);if(!s)return;
   s.treinoPronto=!s.treinoPronto;
   s.treinoProntoData=s.treinoPronto?new Date().toLocaleDateString('pt-BR'):null;
-  await sb(`alunos?id=eq.${id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify({trainopronto:s.treinoPronto,treinoprontodata:s.treinoProntoData})});
+  await sb(`alunos?id=eq.${id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify({treinopronto:s.treinoPronto,treinoprontodata:s.treinoProntoData})});
   renderList();
   const bar=document.getElementById('treinoDoneBar'),box=document.getElementById('treinoDoneBox'),
         lbl=document.getElementById('treinoDoneLbl'),dt=document.getElementById('treinoDoneDate');
