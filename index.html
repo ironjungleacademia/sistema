@@ -211,8 +211,8 @@ textarea{resize:vertical;min-height:70px}
   <div class="login-box">
     <div class="login-logo">IRON<span>JUNGLE</span></div>
     <div class="login-sub">Sistema de Anamnese</div>
-    <div class="form-group"><label>Usuário</label><input type="text" id="loginUser" placeholder="usuario" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="form-group"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-group"><label>Usuário</label><input type="text" id="loginUser" placeholder="usuario" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-group"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="login-btn" onclick="doLogin()">ENTRAR</button>
     <div class="login-error" id="loginError">Usuário ou senha incorretos.</div>
   </div>
