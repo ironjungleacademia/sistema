@@ -157,6 +157,41 @@ textarea{resize:vertical;min-height:70px}
 .status-preenchido{background:rgba(74,232,176,0.12);color:var(--accent2);border:1px solid rgba(74,232,176,0.3)}
 .status-importado{background:rgba(122,130,153,0.12);color:var(--text-muted);border:1px solid rgba(122,130,153,0.3)}
 @media(max-width:700px){.app{flex-direction:column;height:auto}aside{width:100%;min-width:0;max-height:280px}}
+/* LOGIN */
+.login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--radius);padding:40px 36px;width:90%;max-width:380px;text-align:center}
+.login-logo{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--accent);letter-spacing:3px;margin-bottom:4px}
+.login-logo span{color:var(--text)}
+.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:28px}
+.login-box .form-group{text-align:left;margin-bottom:14px}
+.login-box label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px}
+.login-box input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color .15s}
+.login-box input:focus{border-color:var(--accent)}
+.login-btn{width:100%;background:var(--accent);color:#0d0f14;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;letter-spacing:2px;padding:12px;border:none;border-radius:6px;cursor:pointer;margin-top:6px;transition:all .15s}
+.login-btn:hover{background:#f0cc58}
+.login-error{color:var(--danger);font-size:13px;margin-top:10px;display:none}
+/* DASHBOARD */
+.dash-panel{padding:24px;overflow-y:auto;height:calc(100vh - 100px);background:var(--bg)}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.dash-card h3{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(42,48,64,0.5)}
+.metric-row:last-child{border-bottom:none}
+.metric-label{font-size:14px;color:var(--text)}
+.metric-value{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--accent)}
+.metric-value.green{color:var(--accent2)}.metric-value.red{color:var(--danger)}
+.bar-wrap{flex:1;margin:0 12px;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .4s}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--accent);line-height:1}
+.kpi-lbl{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.dash-select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:6px 10px;outline:none;margin-left:8px}
+.obj-tag{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:12px;padding:3px 10px;margin:3px;color:var(--text-muted)}
+/* PENDENTE FILTER */
+.pending-filter{display:flex;align-items:center;gap:6px;margin-top:6px}
+.pending-filter label{font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none}
+.pending-cb{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
 </style>
 </head>
 <body>
@@ -171,10 +206,23 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </header>
 
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">IRON<span>JUNGLE</span></div>
+    <div class="login-sub">Sistema de Anamnese</div>
+    <div class="form-group"><label>Usuário</label><input type="text" id="loginUser" placeholder="usuario" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-group"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()">ENTRAR</button>
+    <div class="login-error" id="loginError">Usuário ou senha incorretos.</div>
+  </div>
+</div>
+
 <div class="tabs">
   <button class="tab active" id="tab-alunos" onclick="switchTab('alunos')">📋 Anamnese</button>
   <button class="tab" id="tab-recados" onclick="switchTab('recados')">💬 Recados <span class="tab-badge" id="badge-recados" style="display:none">0</span></button>
   <button class="tab" id="tab-links" onclick="switchTab('links')">🔗 Links <span class="tab-badge" id="badge-links" style="display:none">0</span></button>
+  <button class="tab" id="tab-dash" onclick="switchTab('dash')">📊 Dashboard</button>
 </div>
 
 <!-- ANAMNESE PANEL -->
@@ -195,6 +243,10 @@ textarea{resize:vertical;min-height:70px}
         <label>Mês</label>
         <select class="month-select" id="monthFilter" onchange="renderList()"><option value="">Todos</option></select>
         <button class="btn-clear-month" onclick="clearMonth()">✕</button>
+      </div>
+      <div class="pending-filter">
+        <input type="checkbox" class="pending-cb" id="onlyPending" onchange="renderList()">
+        <label for="onlyPending">Apenas pendentes</label>
       </div>
     </div>
     <div class="student-list" id="studentList"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
@@ -261,6 +313,13 @@ textarea{resize:vertical;min-height:70px}
       <button class="btn btn-primary" onclick="gerarLink()" id="btnGerarLink">🔗 Gerar Link</button>
     </div>
     <div id="linksList"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD PANEL -->
+<div id="panel-dash" style="display:none">
+  <div class="dash-panel" id="dashContent">
+    <div class="loading"><div class="spinner"></div>Carregando dashboard...</div>
   </div>
 </div>
 
@@ -361,13 +420,16 @@ function renderList(){
   const sel=document.getElementById('monthFilter');filterMonth=sel?sel.value:'';
   const list=document.getElementById('studentList'),stats=document.getElementById('statsBar');
   populateMonthFilter();
+  const onlyPend=document.getElementById('onlyPending')&&document.getElementById('onlyPending').checked;
   let filtered=students.filter(s=>{
     const mS=s.nome.toLowerCase().includes(q);
     const mP=filterProf==='Todos'||s.professor===filterProf;
     let mM=true;
     if(filterMonth&&s.cadastro){const p=s.cadastro.split('/');if(p.length===3)mM=(p[1]+'/'+p[2])===filterMonth;}
-    return mS&&mP&&mM;
+    const mPend=!onlyPend||!s.treinoPronto;
+    return mS&&mP&&mM&&mPend;
   });
+  filtered.sort((a,b)=>{if(a.treinoPronto!==b.treinoPronto)return a.treinoPronto?1:-1;return a.nome.localeCompare(b.nome);});
   const done=filtered.filter(s=>s.treinoPronto).length;
   stats.innerHTML=`<span class="stat">Total: <strong>${filtered.length}</strong></span><span class="stat">Feitos: <strong style="color:var(--accent2)">${done}</strong></span><span class="stat">Pendentes: <strong style="color:var(--accent)">${filtered.length-done}</strong></span>`;
   if(filtered.length===0){list.innerHTML='<div class="empty-list">Nenhum aluno encontrado.</div>';return;}
@@ -575,7 +637,7 @@ async function deleteStudent(id){
   toast('Aluno excluído.','var(--danger)');
 }
 function switchTab(tab){
-  ['alunos','recados','links'].forEach(t=>{
+  ['alunos','recados','links','dash'].forEach(t=>{
     const p=document.getElementById('panel-'+t),tb=document.getElementById('tab-'+t);
     if(p)p.style.display=t===tab?(t==='alunos'?'flex':'block'):'none';
     if(tb)tb.classList.toggle('active',t===tab);
@@ -583,6 +645,7 @@ function switchTab(tab){
   document.getElementById('btnNovoAluno').style.display=tab==='alunos'?'':'none';
   if(tab==='recados')renderRecados();
   if(tab==='links')renderLinks();
+  if(tab==='dash')renderDash();
 }
 // RECADOS
 async function renderRecados(){
@@ -695,9 +758,140 @@ async function deletarLink(id){
   if(!confirm('Excluir este link?'))return;
   await sb(`anamnese_publica?id=eq.${id}`,{method:'DELETE'});renderLinks();toast('Link excluído.','var(--danger)');
 }
+// ── LOGIN ──
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(u==='admin'&&p==='iron.j'){
+    sessionStorage.setItem('ij_auth','1');
+    document.getElementById('loginOverlay').style.display='none';
+    fetchAll();
+  } else {
+    document.getElementById('loginError').style.display='block';
+    document.getElementById('loginPass').value='';
+  }
+}
+function checkAuth(){
+  if(!sessionStorage.getItem('ij_auth')){
+    document.getElementById('loginOverlay').style.display='flex';
+  } else {
+    document.getElementById('loginOverlay').style.display='none';
+    fetchAll();
+  }
+}
+
+// ── DASHBOARD ──
+function renderDash(){
+  const c=document.getElementById('dashContent');
+  if(!c||!students.length)return;
+  const profs=['Miguel','Marcello','Luppi','Daniel','Matheus'];
+  const hoje=new Date();
+  const mesAtual=String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+  const mn=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  // KPIs
+  const total=students.length;
+  const feitos=students.filter(s=>s.treinoPronto).length;
+  const pend=total-feitos;
+  const doMes=students.filter(s=>{if(!s.cadastro)return false;const p=s.cadastro.split('/');return p.length===3&&(p[1]+'/'+p[2])===mesAtual;}).length;
+
+  // Por professor - total e feitos
+  const profData=profs.map(p=>{
+    const all=students.filter(s=>s.professor===p);
+    const done=all.filter(s=>s.treinoPronto).length;
+    return{prof:p,total:all.length,done,pend:all.length-done};
+  });
+  const maxTotal=Math.max(...profData.map(p=>p.total),1);
+
+  // Mês com mais cadastros
+  const bymes={};
+  students.forEach(s=>{if(s.cadastro){const p=s.cadastro.split('/');if(p.length===3){const k=mn[parseInt(p[1])-1]+' '+p[2];bymes[k]=(bymes[k]||0)+1;}}});
+  const sortedMes=Object.entries(bymes).sort((a,b)=>b[1]-a[1]);
+
+  // Objetivos
+  const objCount={};
+  students.forEach(s=>{(s.objetivo||[]).forEach(o=>{objCount[o]=(objCount[o]||0)+1;});});
+  const sortedObj=Object.entries(objCount).sort((a,b)=>b[1]-a[1]);
+
+  // Cadastros por mês (últimos 4)
+  const cadMes={};
+  students.forEach(s=>{if(s.cadastro){const p=s.cadastro.split('/');if(p.length===3){const k=mn[parseInt(p[1])-1]+' '+p[2];cadMes[k]=(cadMes[k]||0)+1;}}});
+  const sortedCad=Object.entries(cadMes).sort((a,b)=>{const[ma,ya]=a[0].split(' ');const[mb,yb]=b[0].split(' ');return(yb-ya)||(mn.indexOf(mb)-mn.indexOf(ma));}).slice(0,4);
+
+  // Dores mais comuns
+  const doresCnt={};
+  students.forEach(s=>{(s.dores||[]).filter(d=>d!=='Não sinto dores').forEach(d=>{doresCnt[d]=(doresCnt[d]||0)+1;});});
+  const sortedDores=Object.entries(doresCnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  c.innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-val">${total}</div><div class="kpi-lbl">Total de Alunos</div></div>
+      <div class="kpi-card"><div class="kpi-val" style="color:var(--accent2)">${feitos}</div><div class="kpi-lbl">Treinos Feitos</div></div>
+      <div class="kpi-card"><div class="kpi-val" style="color:var(--accent)">${pend}</div><div class="kpi-lbl">Treinos Pendentes</div></div>
+      <div class="kpi-card"><div class="kpi-val">${doMes}</div><div class="kpi-lbl">Cadastros este mês</div></div>
+      <div class="kpi-card"><div class="kpi-val">${total>0?Math.round(feitos/total*100):0}%</div><div class="kpi-lbl">% Treinos Feitos</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <h3>📋 Alunos por Professor</h3>
+        ${profData.map(p=>`
+          <div class="metric-row">
+            <span class="metric-label" style="width:72px">${p.prof}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(p.total/maxTotal*100)}%"></div></div>
+            <span class="metric-value">${p.total}</span>
+          </div>`).join('')}
+      </div>
+      <div class="dash-card">
+        <h3>✓ Treinos Feitos por Professor</h3>
+        ${profData.map(p=>`
+          <div class="metric-row">
+            <span class="metric-label" style="width:72px">${p.prof}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${p.total>0?Math.round(p.done/p.total*100):0}%;background:var(--accent2)"></div></div>
+            <span class="metric-value green">${p.done}</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:4px">(${p.pend} pend.)</span>
+          </div>`).join('')}
+      </div>
+      <div class="dash-card">
+        <h3>📅 Cadastros por Mês</h3>
+        ${sortedCad.map(([m,n])=>`
+          <div class="metric-row">
+            <span class="metric-label">${m}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(n/Math.max(...sortedCad.map(x=>x[1]),1)*100)}%"></div></div>
+            <span class="metric-value">${n}</span>
+          </div>`).join('')}
+      </div>
+      <div class="dash-card">
+        <h3>🎯 Objetivos mais Comuns</h3>
+        ${sortedObj.map(([o,n])=>`
+          <div class="metric-row">
+            <span class="metric-label" style="font-size:13px">${o}</span>
+            <span class="metric-value">${n}</span>
+          </div>`).join('')}
+      </div>
+      <div class="dash-card">
+        <h3>🦴 Dores mais Relatadas</h3>
+        ${sortedDores.map(([d,n])=>`
+          <div class="metric-row">
+            <span class="metric-label">${d}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(n/Math.max(...sortedDores.map(x=>x[1]),1)*100)}%;background:var(--danger)"></div></div>
+            <span class="metric-value red">${n}</span>
+          </div>`).join('')}
+      </div>
+      <div class="dash-card">
+        <h3>⚠️ Treinos Pendentes por Prof.</h3>
+        ${profData.sort((a,b)=>b.pend-a.pend).map(p=>`
+          <div class="metric-row">
+            <span class="metric-label" style="width:72px">${p.prof}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${p.total>0?Math.round(p.pend/p.total*100):0}%;background:var(--accent)"></div></div>
+            <span class="metric-value" style="color:${p.pend>5?'var(--danger)':p.pend>2?'var(--accent)':'var(--accent2)'}">${p.pend}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 // Auto-refresh
 setInterval(()=>{if(document.getElementById('tab-recados').classList.contains('active'))renderRecados();if(document.getElementById('tab-links').classList.contains('active'))renderLinks();},20000);
-fetchAll();
+checkAuth();
 </script>
 </body>
 </html>
