@@ -781,54 +781,76 @@ function checkAuth(){
 }
 
 // ── DASHBOARD ──
+function getMesesDisponiveis(){
+  const mn=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const meses=new Set();
+  students.forEach(s=>{if(s.cadastro){const p=s.cadastro.split('/');if(p.length===3)meses.add(p[1]+'/'+p[2]);}});
+  return [...meses].sort((a,b)=>{const[ma,ya]=a.split('/');const[mb,yb]=b.split('/');return(yb-ya)||(mb-ma);})
+    .map(m=>{const[mo,yr]=m.split('/');const mn2=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return{value:m,label:mn2[parseInt(mo)]+' '+yr};});
+}
+
 function renderDash(){
   const c=document.getElementById('dashContent');
   if(!c||!students.length)return;
   const profs=['Miguel','Marcello','Luppi','Daniel','Matheus'];
-  const hoje=new Date();
-  const mesAtual=String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
   const mn=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const hoje=new Date();
+  const mesAtualVal=String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
 
-  // KPIs
-  const total=students.length;
-  const feitos=students.filter(s=>s.treinoPronto).length;
+  // Meses disponíveis para o select
+  const mesesDisp=getMesesDisponiveis();
+  const selMes=document.getElementById('dashMesSel')?document.getElementById('dashMesSel').value:'';
+
+  // Filtra alunos pelo mês selecionado (ou todos)
+  const base=selMes
+    ? students.filter(s=>{if(!s.cadastro)return false;const p=s.cadastro.split('/');return p.length===3&&(p[1]+'/'+p[2])===selMes;})
+    : students;
+
+  const total=base.length;
+  const feitos=base.filter(s=>s.treinoPronto).length;
   const pend=total-feitos;
-  const doMes=students.filter(s=>{if(!s.cadastro)return false;const p=s.cadastro.split('/');return p.length===3&&(p[1]+'/'+p[2])===mesAtual;}).length;
+  const doMes=students.filter(s=>{if(!s.cadastro)return false;const p=s.cadastro.split('/');return p.length===3&&(p[1]+'/'+p[2])===mesAtualVal;}).length;
 
-  // Por professor - total e feitos
   const profData=profs.map(p=>{
-    const all=students.filter(s=>s.professor===p);
+    const all=base.filter(s=>s.professor===p);
     const done=all.filter(s=>s.treinoPronto).length;
     return{prof:p,total:all.length,done,pend:all.length-done};
   });
   const maxTotal=Math.max(...profData.map(p=>p.total),1);
 
-  // Mês com mais cadastros
-  const bymes={};
-  students.forEach(s=>{if(s.cadastro){const p=s.cadastro.split('/');if(p.length===3){const k=mn[parseInt(p[1])-1]+' '+p[2];bymes[k]=(bymes[k]||0)+1;}}});
-  const sortedMes=Object.entries(bymes).sort((a,b)=>b[1]-a[1]);
-
-  // Objetivos
   const objCount={};
-  students.forEach(s=>{(s.objetivo||[]).forEach(o=>{objCount[o]=(objCount[o]||0)+1;});});
+  base.forEach(s=>{(s.objetivo||[]).forEach(o=>{objCount[o]=(objCount[o]||0)+1;});});
   const sortedObj=Object.entries(objCount).sort((a,b)=>b[1]-a[1]);
 
-  // Cadastros por mês (últimos 4)
   const cadMes={};
   students.forEach(s=>{if(s.cadastro){const p=s.cadastro.split('/');if(p.length===3){const k=mn[parseInt(p[1])-1]+' '+p[2];cadMes[k]=(cadMes[k]||0)+1;}}});
-  const sortedCad=Object.entries(cadMes).sort((a,b)=>{const[ma,ya]=a[0].split(' ');const[mb,yb]=b[0].split(' ');return(yb-ya)||(mn.indexOf(mb)-mn.indexOf(ma));}).slice(0,4);
+  const sortedCad=Object.entries(cadMes).sort((a,b)=>{const[ma,ya]=a[0].split(' ');const[mb,yb]=b[0].split(' ');return(yb-ya)||(mn.indexOf(mb)-mn.indexOf(ma));}).slice(0,5);
 
-  // Dores mais comuns
   const doresCnt={};
-  students.forEach(s=>{(s.dores||[]).filter(d=>d!=='Não sinto dores').forEach(d=>{doresCnt[d]=(doresCnt[d]||0)+1;});});
+  base.forEach(s=>{(s.dores||[]).filter(d=>d!=='Não sinto dores').forEach(d=>{doresCnt[d]=(doresCnt[d]||0)+1;});});
   const sortedDores=Object.entries(doresCnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
+  const filtroLabel=selMes?mesesDisp.find(m=>m.value===selMes)?.label||selMes:'Todos os meses';
+
   c.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--text)">
+        Dashboard <span style="color:var(--accent);font-size:16px">— ${filtroLabel}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">Filtrar por mês:</label>
+        <select class="dash-select" id="dashMesSel" onchange="renderDash()">
+          <option value="">Todos os meses</option>
+          ${mesesDisp.map(m=>`<option value="${m.value}"${selMes===m.value?' selected':''}>${m.label}</option>`).join('')}
+        </select>
+        ${selMes?`<button onclick="document.getElementById('dashMesSel').value='';renderDash()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">✕ Limpar</button>`:''}
+      </div>
+    </div>
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-val">${total}</div><div class="kpi-lbl">Total de Alunos</div></div>
+      <div class="kpi-card"><div class="kpi-val">${total}</div><div class="kpi-lbl">${selMes?'Alunos no mês':'Total de Alunos'}</div></div>
       <div class="kpi-card"><div class="kpi-val" style="color:var(--accent2)">${feitos}</div><div class="kpi-lbl">Treinos Feitos</div></div>
       <div class="kpi-card"><div class="kpi-val" style="color:var(--accent)">${pend}</div><div class="kpi-lbl">Treinos Pendentes</div></div>
-      <div class="kpi-card"><div class="kpi-val">${doMes}</div><div class="kpi-lbl">Cadastros este mês</div></div>
+      ${!selMes?`<div class="kpi-card"><div class="kpi-val">${doMes}</div><div class="kpi-lbl">Cadastros este mês</div></div>`:''}
       <div class="kpi-card"><div class="kpi-val">${total>0?Math.round(feitos/total*100):0}%</div><div class="kpi-lbl">% Treinos Feitos</div></div>
     </div>
     <div class="dash-grid">
@@ -852,6 +874,15 @@ function renderDash(){
           </div>`).join('')}
       </div>
       <div class="dash-card">
+        <h3>⚠️ Treinos Pendentes por Professor</h3>
+        ${[...profData].sort((a,b)=>b.pend-a.pend).map(p=>`
+          <div class="metric-row">
+            <span class="metric-label" style="width:72px">${p.prof}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${p.total>0?Math.round(p.pend/p.total*100):0}%;background:var(--accent)"></div></div>
+            <span class="metric-value" style="color:${p.pend>5?'var(--danger)':p.pend>2?'var(--accent)':'var(--accent2)'}">${p.pend}</span>
+          </div>`).join('')}
+      </div>
+      <div class="dash-card">
         <h3>📅 Cadastros por Mês</h3>
         ${sortedCad.map(([m,n])=>`
           <div class="metric-row">
@@ -862,29 +893,20 @@ function renderDash(){
       </div>
       <div class="dash-card">
         <h3>🎯 Objetivos mais Comuns</h3>
-        ${sortedObj.map(([o,n])=>`
+        ${sortedObj.length?sortedObj.map(([o,n])=>`
           <div class="metric-row">
             <span class="metric-label" style="font-size:13px">${o}</span>
             <span class="metric-value">${n}</span>
-          </div>`).join('')}
+          </div>`).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">Sem dados</div>'}
       </div>
       <div class="dash-card">
         <h3>🦴 Dores mais Relatadas</h3>
-        ${sortedDores.map(([d,n])=>`
+        ${sortedDores.length?sortedDores.map(([d,n])=>`
           <div class="metric-row">
             <span class="metric-label">${d}</span>
             <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(n/Math.max(...sortedDores.map(x=>x[1]),1)*100)}%;background:var(--danger)"></div></div>
             <span class="metric-value red">${n}</span>
-          </div>`).join('')}
-      </div>
-      <div class="dash-card">
-        <h3>⚠️ Treinos Pendentes por Prof.</h3>
-        ${profData.sort((a,b)=>b.pend-a.pend).map(p=>`
-          <div class="metric-row">
-            <span class="metric-label" style="width:72px">${p.prof}</span>
-            <div class="bar-wrap"><div class="bar-fill" style="width:${p.total>0?Math.round(p.pend/p.total*100):0}%;background:var(--accent)"></div></div>
-            <span class="metric-value" style="color:${p.pend>5?'var(--danger)':p.pend>2?'var(--accent)':'var(--accent2)'}">${p.pend}</span>
-          </div>`).join('')}
+          </div>`).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">Sem dados</div>'}
       </div>
     </div>`;
 }
