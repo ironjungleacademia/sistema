@@ -348,7 +348,9 @@ const H = {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'applicatio
 
 async function sb(path,opts={}){
   const r=await fetch(SB+'/rest/v1/'+path,{...opts,headers:{...H,'Prefer':opts.prefer||'',...(opts.headers||{})}});
-  const t=await r.text();return t?JSON.parse(t):null;
+  const t=await r.text();
+  if(!r.ok){console.error('Supabase erro',r.status,t);return {_erro:true,status:r.status,msg:t};}
+  return t?JSON.parse(t):null;
 }
 
 // Convert Supabase row (lowercase) to app object (camelCase)
@@ -754,7 +756,16 @@ async function importarAnamnese(id,token){
     obs:dd.obs||'',dataAssinatura:dd.dataAssinatura||'',treinoPronto:false,treinoProntoData:null,
     cadastro:new Date().toLocaleDateString('pt-BR')
   };
-  const res=await sb('alunos',{method:'POST',prefer:'return=representation',body:JSON.stringify(appToRow(aluno))});
+  const row=appToRow(aluno);
+  console.log('Inserindo aluno:', JSON.stringify(row));
+  const res=await sb('alunos',{method:'POST',prefer:'return=representation',body:JSON.stringify(row)});
+  console.log('Resultado insert:', JSON.stringify(res));
+  if(!res||res._erro||!Array.isArray(res)||res.length===0){
+    const errMsg = res&&res.msg ? JSON.parse(res.msg||'{}').message||res.msg : 'Erro desconhecido';
+    console.error('Falha ao inserir:', errMsg);
+    toast('❌ Erro ao importar: '+errMsg,'var(--danger)');
+    return;
+  }
   await sb(`anamnese_publica?id=eq.${id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify({status:'importado'})});
   await fetchAll();
   renderLinks();
