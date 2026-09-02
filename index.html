@@ -370,7 +370,7 @@ function rowToApp(r){
 }
 
 function appToRow(a){
-  return {
+  const row = {
     nome:a.nome,professor:a.professor,datanasc:a.dataNasc||'',altura:a.altura||'',peso:a.peso||'',
     telefone:a.telefone||'',objetivo:a.objetivo||[],objetivooutro:a.objetivoOutro||'',
     jatreinou:a.jaTreinou||'',tempopratica:a.tempoPratica||'',temposemtreinar:a.tempoSemTreinar||'',
@@ -382,6 +382,8 @@ function appToRow(a){
     treinopronto:a.treinoPronto||false,treinoprontodata:a.treinoProntoData||null,
     cadastro:a.cadastro||new Date().toLocaleDateString('pt-BR')
   };
+  if(a.id) row.id = a.id;
+  return row;
 }
 
 let students=[], currentId=null, filterProf='Todos', saveTimer=null;
@@ -451,7 +453,8 @@ async function createStudent(){
   const dataNasc=document.getElementById('newDob').value;
   if(!nome||!professor){toast('⚠ Preencha nome e professor!','var(--danger)');return;}
   const btn=document.getElementById('btnCreate');btn.disabled=true;btn.textContent='Criando...';
-  const aluno={nome,professor,dataNasc,objetivo:[],saude:[],dores:[],sintomas:[],treinoPronto:false,cadastro:new Date().toLocaleDateString('pt-BR')};
+  const novoId=Date.now().toString();
+  const aluno={id:novoId,nome,professor,dataNasc,objetivo:[],saude:[],dores:[],sintomas:[],treinoPronto:false,cadastro:new Date().toLocaleDateString('pt-BR')};
   const row=appToRow(aluno);
   const res=await sb('alunos',{method:'POST',prefer:'return=representation',body:JSON.stringify(row)});
   if(res&&res[0]){
@@ -739,25 +742,27 @@ async function importarAnamnese(id,token){
   const data=await sb(`anamnese_publica?token=eq.${token}&select=*`);
   if(!data||!data[0]||!data[0].dados){toast('Dados não encontrados.','var(--danger)');return;}
   const d=data[0],dd=d.dados;
+  const importId=Date.now().toString();
   const aluno={
-    nome:d.nome_aluno,professor:d.professor,dataNasc:dd.dataNasc||'',altura:dd.altura||'',
+    id:importId,nome:d.nome_aluno,professor:d.professor,dataNasc:dd.dataNasc||'',altura:dd.altura||'',
     peso:dd.peso||'',telefone:dd.telefone||'',objetivo:dd.objetivo||[],objetivoOutro:dd.objetivoOutro||'',
     jaTreinou:dd.jaTreinou||'',tempoPratica:dd.tempoPratica||'',tempoSemTreinar:dd.tempoSemTreinar||'',
     vezesSemanais:dd.vezesSemanais||'',tempoPorTreino:dd.tempoPorTreino||'',outroEsporte:dd.outroEsporte||'',
     rotina:dd.rotina||'',saude:dd.saude||[],saudeOutro:dd.saudeOutro||'',
     dores:dd.dores||[],doresObs:dd.doresObs||'',lesoes:dd.lesoes||'',cirurgias:dd.cirurgias||'',
     fraturas:dd.fraturas||'',medicamentos:dd.medicamentos||'',sintomas:dd.sintomas||[],
-    obs:dd.obs||'',dataAssinatura:dd.dataAssinatura||'',treinoPronto:false,treinoProntoData:null
+    obs:dd.obs||'',dataAssinatura:dd.dataAssinatura||'',treinoPronto:false,treinoProntoData:null,
+    cadastro:new Date().toLocaleDateString('pt-BR')
   };
   const res=await sb('alunos',{method:'POST',prefer:'return=representation',body:JSON.stringify(appToRow(aluno))});
   await sb(`anamnese_publica?id=eq.${id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify({status:'importado'})});
   await fetchAll();
   renderLinks();
   switchTab('alunos');
-  if(res&&res[0]){
-    const novoId=res[0].id;
-    setTimeout(()=>openStudent(novoId),300);
-  }
+  setTimeout(()=>{
+    const s=students.find(x=>x.id===importId);
+    if(s)openStudent(importId);
+  },400);
   toast('✓ Anamnese importada!','var(--accent2)');
 }
 async function deletarLink(id){
