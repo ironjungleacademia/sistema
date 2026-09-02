@@ -751,7 +751,13 @@ async function importarAnamnese(id,token){
   };
   const res=await sb('alunos',{method:'POST',prefer:'return=representation',body:JSON.stringify(appToRow(aluno))});
   await sb(`anamnese_publica?id=eq.${id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify({status:'importado'})});
-  if(res&&res[0]){students.push(rowToApp(res[0]));renderList();renderLinks();switchTab('alunos');openStudent(res[0].id);}
+  await fetchAll();
+  renderLinks();
+  switchTab('alunos');
+  if(res&&res[0]){
+    const novoId=res[0].id;
+    setTimeout(()=>openStudent(novoId),300);
+  }
   toast('✓ Anamnese importada!','var(--accent2)');
 }
 async function deletarLink(id){
